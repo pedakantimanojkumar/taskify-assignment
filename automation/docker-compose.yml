@@ -1,0 +1,15 @@
+services:
+  selenium:
+    # Apple Silicon (arm64) compatible Selenium image
+    image: seleniarm/standalone-chromium
+    shm_size: "2g"
+    ports:
+      - "7900:7900"  # noVNC UI in browser at http://localhost:7900
+
+  automation:
+    build: .
+    depends_on:
+      - selenium
+    environment:
+      - SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub
+
