@@ -6,7 +6,6 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///users.db")
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -20,7 +19,6 @@ class User(db.Model):
     email = db.Column(db.String(120), nullable=False)
 
 
-# Create tables at startup (Flask 3 compatible – no before_first_request)
 with app.app_context():
     db.create_all()
 

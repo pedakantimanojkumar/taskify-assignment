@@ -1,135 +1,63 @@
-# Assignment Submission  
+Assignment Submission  
 Name: Pedakanti Manoj Kumar Reddy
 
----
+--------------------------------------------------
+Q1 – Web App
+--------------------------------------------------
 
-## Q1 – Web App for Mass Users Worldwide
+For this part I built a small full‑stack user app.
 
-For this question I built a small full‑stack web app and also described how I would run it at scale.
+Frontend: React  
+I used React to build a simple page where I can add a user (name + email) and see the list of users. The frontend calls the backend API using fetch.
 
-### Tech stack I chose
+Backend: Flask (Python)  
+The backend is a basic Flask API with two main routes:
+- GET /api/users – returns all users as JSON.
+- POST /api/users – takes name and email from the request body, does a small validation and saves the user.
+Cors is enabled so the React app (running on a different port) can call the API without issues.
 
-- **Frontend**: React.js  
-  I used React to build a simple single‑page UI where I can add a user (name + email) and see the list of users.
+Database: Postgres (Docker) and SQLite (local)  
+I used SQLAlchemy with a simple User model (id, name, email). When I run with Docker, the backend connects to a Postgres container using an environment variable. When I run locally without Docker, it uses a SQLite file.
 
-- **Backend**: Python with Flask  
-  The backend is a small Flask API. It exposes:
-  - `GET /api/users` – returns all users as JSON.
-  - `POST /api/users` – takes `name` and `email`, validates them, saves to the DB and returns the created user.
-  I added `flask-cors` so the React app (running on a different port) can call the API.
+How to run with Docker:
+1) cd webapp
+2) docker compose up --build
 
-- **Database**: PostgreSQL (in Docker) and SQLite (local fallback)  
-  I used `flask-sqlalchemy` to define a `User` model with `id`, `name`, and `email`.  
-  - When I run with Docker, the backend connects to a Postgres container using `DATABASE_URL`.  
-  - When I run without Docker, it falls back to a local SQLite file (`users.db`).
+Then:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000/api/users
 
-### How I run the web app
+How to run without Docker:
 
-**With Docker (recommended):**
+Backend:
+1) cd webapp/backend
+2) pip install -r requirements.txt
+3) python app.py
 
-```bash
-cd webapp
-docker compose up --build
-```
+Frontend:
+1) cd webapp/frontend
+2) npm install
+3) npm run dev
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:5000/api/users`
+Short note on scale:  
+For more users, I would containerise the backend and database and run multiple instances behind a load balancer, and use a managed Postgres service. The code here is small, but the idea is to keep things stateless in the app and put the state in the database.
 
-Docker Compose starts three services together:
-- `db` – Postgres database
-- `backend` – Flask API (talks to Postgres)
-- `frontend` – React app (talks to the API)
+--------------------------------------------------
+Q2 – Automated Multi‑Step Form Filling
+--------------------------------------------------
 
-**Without Docker (uses SQLite):**
+For this part I used Python and Selenium to automate filling and submitting a web form.
 
-Terminal 1 – backend:
+I wrote a script that:
+- Opens the DemoQA practice form page.
+- Fills first name, last name, email, phone and address.
+- Selects the gender radio button.
+- Scrolls to the bottom and clicks the submit button.
+- Prints a message and closes the browser.
 
-```bash
-cd webapp/backend
-pip install -r requirements.txt
-python app.py
-```
+Running without Docker:
+1) cd automation
+2) pip install -r requirements.txt
+3) python form_automation.py
 
-Terminal 2 – frontend:
-
-```bash
-cd webapp/frontend
-npm install
-npm run dev
-```
-
-### How I would scale this for worldwide users
-
-If I had to serve a large number of users globally, I would:
-- Keep **React** on the frontend and deploy it on a service like Vercel or Netlify.
-- Run the **Flask** backend (or a Node.js/Express backend) in containers on AWS/GCP, behind a load balancer.
-- Use a managed relational DB like **AWS RDS (PostgreSQL)**, with read replicas in multiple regions.
-- Put a **CDN** (e.g. Cloudflare) in front of the static assets for faster delivery.
-- Use **Docker** and **Docker Compose / orchestration** to keep environments consistent.
-
----
-
-## Q2 – Automated Multi‑Step Form Filling
-
-For this question I used **Python + Selenium** to automate filling and submitting a web form.
-
-### Tools and idea
-
-- **Language**: Python  
-- **Library**: Selenium  
-  Selenium lets my Python script control a real browser (open pages, type into inputs, click buttons, wait for elements).
-
-### What my script does
-
-The script in `automation/form_automation.py`:
-- Opens the DemoQA practice form: `https://demoqa.com/automation-practice-form`.
-- Fills in:
-  - First name, last name
-  - Email
-  - Phone number
-  - Address
-- Selects the gender radio button (using an explicit wait and a JavaScript click to avoid click interception by ads).
-- Scrolls down and clicks the **Submit** button.
-- Prints `"Form submitted successfully!"` and closes the browser.
-
-### Running the automation without Docker
-
-```bash
-cd automation
-pip install -r requirements.txt
-python form_automation.py
-```
-
-This expects Chrome + ChromeDriver to be available on the machine.
-
-### Running the automation with Docker and Selenium container
-
-I also containerised this so it runs in a controlled environment:
-
-- `automation/Dockerfile` builds a Python image that runs `form_automation.py`.
-- `automation/docker-compose.yml` defines two services:
-  - `selenium`: runs a Selenium server + Chromium browser (`seleniarm/standalone-chromium`), and exposes a noVNC UI on `http://localhost:7900`.
-  - `automation`: runs my Python script and connects to Selenium using WebDriver (`SELENIUM_REMOTE_URL=http://selenium:4444/wd/hub`).
-
-Commands:
-
-```bash
-cd automation
-docker-compose up selenium          # starts Selenium + browser
-```
-
-Then, in another terminal:
-
-```bash
-cd automation
-docker-compose up --build automation
-```
-
-If I open `http://localhost:7900/?autoconnect=1&resize=scale` in my browser, I can actually watch the Chromium browser inside the container filling and submitting the form.
-
-### Why I chose Selenium
-
-- I am comfortable with Python.
-- Selenium is a standard tool for web automation and testing.
-- It can wait for dynamic elements, interact with complex pages, and supports multiple browsers (Chrome, Firefox, etc.).
-- By combining Selenium with Docker, I can run the same automation reliably on different machines.
+(This expects Chrome and ChromeDriver to be installed on the machine.)
